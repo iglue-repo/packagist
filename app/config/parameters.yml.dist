@@ -23,6 +23,9 @@ parameters:
 
     locale: en
 
+    assets_base_urls:
+      - /
+
     google_analytics:
         ga_key:
 
