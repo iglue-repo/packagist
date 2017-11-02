@@ -15,6 +15,7 @@ framework:
     templating:      { engines: ['twig'] }
     assets:
         version: 'v=%assets_version%'
+        base_urls: '%assets_base_urls%'
     default_locale: '%locale%'
     session:
         name:            packagist
