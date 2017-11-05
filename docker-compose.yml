@@ -1,0 +1,31 @@
+version: '2'
+services:
+  webserver:
+    image: prophusion/prophusion-apache
+    environment:
+      - PHP_VERSION=7.1.11
+    volumes:
+      - .:/var/www/html
+      - php-builds:/usr/local/phpenv/versions
+    ports:
+      - "80:80"
+    links:
+      - redis
+      - mysql
+
+  redis:
+    image: redis
+
+  mysql:
+    image: "mysql:5.7"
+    volumes:
+      - reposerver-mysql:/var/lib/mysql
+    environment:
+      - "MYSQL_ROOT_PASSWORD=its a dev box, yo"
+      - MYSQL_DATABASE=reposerver
+      - MYSQL_USER=reposerver
+      - MYSQL_PASSWORD=reposerver
+
+volumes:
+  php-builds: {}
+  reposerver-mysql: {}
