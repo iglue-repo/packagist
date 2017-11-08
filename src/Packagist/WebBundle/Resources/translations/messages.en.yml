@@ -150,8 +150,8 @@ user:
     packages: "%username%'s packages"
 
 'Search packages...': 'Search packages...'
-brandname: Packagist
-navclaim: The PHP Package Repository
+brandname: iglue 1-unstable
+navclaim: LTS for Drupal & its dependencies
 Sort: 'Sort'
 Order: 'Order'
 Username: 'Username'
