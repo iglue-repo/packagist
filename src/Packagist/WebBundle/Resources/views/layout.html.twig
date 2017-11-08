@@ -47,9 +47,6 @@
                             <li>
                                 <a href="{{ path('browse') }}">{{ 'menu.browse'|trans }}</a>
                             </li>
-                            <li>
-                                <a href="{{ path('submit') }}">{{ 'menu.submit'|trans }}</a>
-                            </li>
                         {%- if app.user %}
                             <li class="nav-user">
                                 <section>
@@ -61,14 +58,16 @@
                                 </section>
                             </li>
                         {%- else %}
-                            <li>
-                                <a href="{{ path('fos_user_registration_register') }}">{{ 'menu.create_account'|trans }}</a>
-                            </li>
                             <li class="nav-user">
                                 <section class="nav-user-signin">
                                     <a href="{{ path('hwi_oauth_connect') }}">{{ 'menu.sign_in'|trans }}</a>
 
                                     <section class="signin-box">
+                                        <div class="signin-box-register">
+                                            <p>Access is limited to members of the iglue-repo organization on GitHub.</p>
+                                            <a href="{{ hwi_oauth_login_url('github') }}" class="pull-right btn btn-primary btn-github"><span class="icon-github"></span>Authenticate with Github</a>
+                                        </div>
+                                        <!--
                                         <form action="{{ path('login_check') }}" method="POST">
                                             <div class="input-group">
                                                 <input class="form-control" type="text" id="_username" name="_username" placeholder="{{ 'security.login.username'|trans({}, 'FOSUserBundle') }}">
@@ -86,6 +85,7 @@
                                                 </label>
                                             </div>
 
+
                                             {%- if packagist_host and packagist_host in app.request.headers.get('Referer') %}
                                                 <input type="hidden" name="_target_path" value="{{ app.request.headers.get('Referer') }}" />
                                             {%- endif %}
@@ -95,10 +95,7 @@
                                                 <button type="submit" class="btn btn-success" id="_submit" name="_submit">{{ 'security.login.submit'|trans({}, 'FOSUserBundle') }}</button>
                                             </div>
                                         </form>
-
-                                        <div class="signin-box-register">
-                                            <a href="{{ path('fos_user_registration_register') }}">{{ 'signinbox.register'|trans }}</a>
-                                        </div>
+                                         -->
                                     </section>
                                 </section>
                             </li>
