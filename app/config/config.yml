@@ -128,3 +128,15 @@ nelmio_cors:
         '^/packages/[^/]+/[^/]+\.json$':
             allow_methods: ['GET']
             forced_allow_origin_value: '*'
+
+httplug:
+    plugins:
+      logger: ~
+    clients:
+      github_api:
+        factory: 'httplug.factory.guzzle6'
+        config:
+          verify: true
+          timeout: 12
+          headers:
+            - User-Agent: iglue-automater/0.1

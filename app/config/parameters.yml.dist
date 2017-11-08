@@ -13,6 +13,8 @@ parameters:
     mailer_from_email: admin@example.org
     mailer_from_name: Admin Team
 
+    github_authorized_org: iglue-repo
+
     # packagist_host: example.org
     # router.request_context.host: '%packagist_host%'
     # router.request_context.scheme: https

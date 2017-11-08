@@ -1,0 +1,13 @@
+{% extends 'PackagistWebBundle::layout.html.twig' %}
+
+{% block content %}
+<section class="wrapper">
+    <section class="container error">
+        <div class="row">
+            <h2 class="title">Access Denied</h2>
+            <h3 class="font-normal">{{  exception.message }}</h3>
+            <h4>Go back to the <a href="{{ path('home') }}">homepage</a> or use the search above to find the package you want.</h4>
+        </div>
+    </section>
+</section>
+{% endblock %}

@@ -25,6 +25,8 @@ class AppKernel extends Kernel
             new Knp\Bundle\MenuBundle\KnpMenuBundle(),
             new Nelmio\CorsBundle\NelmioCorsBundle(),
             new Packagist\WebBundle\PackagistWebBundle(),
+            new Http\HttplugBundle\HttplugBundle(),
+            new Packagist\OauthBundle\PackagistOauthBundle(),
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'))) {
