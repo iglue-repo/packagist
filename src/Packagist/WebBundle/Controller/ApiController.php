@@ -215,6 +215,9 @@ class ApiController extends Controller
 
         $packageOrmRepo = $this->getDoctrine()->getRepository('PackagistWebBundle:Package');
         $existingPackage = $packageOrmRepo->findOneByName($expectedFullPackage);
+
+        $em = $this->get('doctrine.orm.entity_manager');
+
         if (! $existingPackage) {
             // Try to create a new package.
             $package = new Package;
@@ -242,6 +245,8 @@ class ApiController extends Controller
                 $actualName = $package->getName();
                 return new Response(json_encode(['status' => 'error', 'message' => "GitHub repository name matches package '$expectedFullPackage', but composer.json disagrees with '$actualName'"]), 406);
             }
+            $em->persist($package);
+            $existingPackage = $package;
         }
         $packages = [$existingPackage];
 
@@ -249,7 +254,6 @@ class ApiController extends Controller
         set_time_limit(3600);
 
         // put both updating the database and scanning the repository in a transaction
-        $em = $this->get('doctrine.orm.entity_manager');
         $updater = $this->get('packagist.package_updater');
         $config = Factory::createConfig();
         $io = new BufferIO('', OutputInterface::VERBOSITY_VERY_VERBOSE, new HtmlOutputFormatter(Factory::createAdditionalStyles()));
