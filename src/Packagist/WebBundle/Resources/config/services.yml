@@ -31,7 +31,7 @@ services:
 
     packagist.package_dumper:
         class: Packagist\WebBundle\Package\SymlinkDumper
-        arguments: [ '@doctrine', '@filesystem', '@router', '%kernel.root_dir%/../web/', '%packagist_metadata_dir%', '%packagist_dumper_compress%' ]
+        arguments: [ '@doctrine', '@filesystem', '@router', '%kernel.root_dir%/../web/1-unstable/', '%packagist_metadata_dir%', '%packagist_dumper_compress%' ]
 
     packagist.user_provider:
         class: Packagist\WebBundle\Security\Provider\UserProvider
@@ -134,6 +134,7 @@ services:
     packagist.algolia.client:
         class: AlgoliaSearch\Client
         arguments: ['%algolia.app_id%', '%algolia.admin_key%']
+
 
 parameters:
     security.exception_listener.class: Packagist\WebBundle\Security\ExceptionListener
