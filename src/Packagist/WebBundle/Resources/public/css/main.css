@@ -243,6 +243,11 @@ strong {
     right: 0;
     position: absolute;
 }
+
+.nav-user .nav-user-menu, .nav-user .signin-box > div {
+    padding: 5px;
+}
+
 .nav-user .nav-user-menu {
     width: 220px;
 }

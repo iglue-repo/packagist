@@ -3,9 +3,8 @@
     <head>
         <meta charset="UTF-8" />
 
-        <title>{% block title %}Packagist{% endblock %}</title>
-        <meta name="description" content="{% block description %}The PHP Package Repository{% endblock %}" />
-        <meta name="author" content="Jordi Boggiano" />
+        <title>{% block title %}iglue repositories{% endblock %}</title>
+        <meta name="description" content="{% block description %}LTS for Drupal and its dependencies.{% endblock %}" />
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -18,8 +17,8 @@
         {% block stylesheets %}{% endblock %}
 
         {% block head_feeds %}
-        <link rel="alternate" type="application/rss+xml" title="Newly Submitted Packages - Packagist" href="{{ url('feed_packages', {_format: 'rss'}) }}" />
-        <link rel="alternate" type="application/rss+xml" title="New Releases - Packagist" href="{{ url('feed_releases', {_format: 'rss'}) }}" />
+        <link rel="alternate" type="application/rss+xml" title="Newly Added Packages - Iglue" href="{{ url('feed_packages', {_format: 'rss'}) }}" />
+        <link rel="alternate" type="application/rss+xml" title="New Releases - Iglue" href="{{ url('feed_releases', {_format: 'rss'}) }}" />
         {% endblock %}
 
         <link rel="search" type="application/opensearchdescription+xml" href="{{ asset('search.osd') }}" title="Packagist" />
@@ -63,9 +62,12 @@
                                     <a href="{{ path('hwi_oauth_connect') }}">{{ 'menu.sign_in'|trans }}</a>
 
                                     <section class="signin-box">
-                                        <div class="signin-box-register">
-                                            <p>Access is limited to members of the iglue-repo organization on GitHub.</p>
+                                        <div class="signin-box-buttons">
+                                            <p>Maintainer login is limited to members of the iglue-repo organization on GitHub.</p>
                                             <a href="{{ hwi_oauth_login_url('github') }}" class="pull-right btn btn-primary btn-github"><span class="icon-github"></span>Authenticate with Github</a>
+                                        </div>
+                                        <div class="signin-box-register">
+                                            <a href="https://docs.google.com/forms/d/e/1FAIpQLSeq7AWFm0XbjfeIyhtEzn5w9BYAPN_CY2ourazDtxFycBeBIQ/viewform">Become a maintainer</a>
                                         </div>
                                         <!--
                                         <form action="{{ path('login_check') }}" method="POST">
