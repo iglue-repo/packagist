@@ -725,7 +725,7 @@ class Package
      */
     public function getMaintainers()
     {
-        return $this->maintainers;
+        return $this->maintainers ?? new ArrayCollection();
     }
 
     /**
