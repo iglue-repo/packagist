@@ -55,13 +55,23 @@ class ApiController extends Controller
     }
 
     /**
-     * @Route("/api/update-package", name="generic_postreceive", defaults={"_format" = "json"})
      * @Route("/api/github", name="github_postreceive", defaults={"_format" = "json"})
-     * @Route("/api/bitbucket", name="bitbucket_postreceive", defaults={"_format" = "json"})
      * @Method({"POST"})
      */
     public function updatePackageAction(Request $request)
     {
+        // Verify message is signed by GitHub
+        $rawSignature = $request->headers->get('X-Hub-Signature');
+        list($algo, $hexits) = explode('=', $rawSignature, 2);
+        $correctHexits = hash_hmac(
+            $algo,
+            $request->getContent(),
+            $this->container->getParameter('github_org_webhook_secret')
+          );
+        if (! hash_equals($correctHexits, $hexits)) {
+            return new JsonResponse(['status' => 'error', 'message' => 'Invalid X-Hub-Signature'], 403);
+        }
+
         // parse the payload
         $payload = json_decode($request->request->get('payload'), true);
         if (!$payload && $request->headers->get('Content-Type') === 'application/json') {
@@ -183,11 +193,6 @@ class ApiController extends Controller
      */
     protected function receivePost(Request $request, $ghRepoName, $ghOwnerId, $url, $urlRegex, $githubOrgSecret)
     {
-        // Verify shared secret.
-        if ($githubOrgSecret !== $this->container->getParameter('github_org_webhook_secret')) {
-            return new Response(json_encode(['status' => 'error', 'message' => 'Incorrect shared secret']), 403);
-        }
-
         // try to parse the URL first to avoid the DB lookup on malformed requests
         if (!preg_match($urlRegex, $url)) {
             return new Response(json_encode(array('status' => 'error', 'message' => 'Could not parse payload repository URL')), 406);
