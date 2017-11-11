@@ -33,7 +33,6 @@ use Composer\Repository\Vcs\GitHubDriver;
  *     }
  * )
  * @Assert\Callback(callback="isPackageUnique")
- * @Assert\Callback(callback="isVendorWritable")
  * @Assert\Callback(callback="isRepositoryValid", groups={"Update", "Default"})
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
@@ -330,24 +329,6 @@ class Package
         try {
             if ($this->entityRepository->findOneByName($this->name)) {
                 $context->buildViolation('A package with the name <a href="'.$this->router->generate('view_package', array('name' => $this->name)).'">'.$this->name.'</a> already exists.')
-                    ->atPath('repository')
-                    ->addViolation()
-                ;
-            }
-        } catch (\Doctrine\ORM\NoResultException $e) {}
-    }
-
-    public function isVendorWritable(ExecutionContextInterface $context)
-    {
-        try {
-            $vendor = $this->getVendor();
-            if ($vendor && $this->entityRepository->isVendorTaken($vendor, reset($this->maintainers))) {
-                $context->buildViolation('The vendor is already taken by someone else. '
-                        . 'You may ask them to add your package and give you maintainership access. '
-                        . 'If they add you as a maintainer on any package in that vendor namespace, '
-                        . 'you will then be able to add new packages in that namespace. '
-                        . 'The packages already in that vendor namespace can be found at '
-                        . '<a href="'.$this->router->generate('view_vendor', array('vendor' => $vendor)).'">'.$vendor.'</a>')
                     ->atPath('repository')
                     ->addViolation()
                 ;
