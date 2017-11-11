@@ -55,43 +55,6 @@ class ApiController extends Controller
     }
 
     /**
-     * @Route("/api/create-package", name="generic_create", defaults={"_format" = "json"})
-     * @Method({"POST"})
-     */
-    public function createPackageAction(Request $request)
-    {
-        $payload = json_decode($request->getContent(), true);
-        if (!$payload) {
-            return new JsonResponse(array('status' => 'error', 'message' => 'Missing payload parameter'), 406);
-        }
-        $url = $payload['repository']['url'];
-        $package = new Package;
-        $package->setEntityRepository($this->getDoctrine()->getRepository('PackagistWebBundle:Package'));
-        $package->setRouter($this->get('router'));
-        $user = $this->findUser($request);
-        $package->addMaintainer($user);
-        $package->setRepository($url);
-        $errors = $this->get('validator')->validate($package);
-        if (count($errors) > 0) {
-            $errorArray = array();
-            foreach ($errors as $error) {
-                $errorArray[$error->getPropertyPath()] =  $error->getMessage();
-            }
-            return new JsonResponse(array('status' => 'error', 'message' => $errorArray), 406);
-        }
-        try {
-            $em = $this->getDoctrine()->getManager();
-            $em->persist($package);
-            $em->flush();
-        } catch (\Exception $e) {
-            $this->get('logger')->critical($e->getMessage(), array('exception', $e));
-            return new JsonResponse(array('status' => 'error', 'message' => 'Error saving package'), 500);
-        }
-
-        return new JsonResponse(array('status' => 'success'), 202);
-    }
-
-    /**
      * @Route("/api/update-package", name="generic_postreceive", defaults={"_format" = "json"})
      * @Route("/api/github", name="github_postreceive", defaults={"_format" = "json"})
      * @Route("/api/bitbucket", name="bitbucket_postreceive", defaults={"_format" = "json"})
@@ -112,21 +75,15 @@ class ApiController extends Controller
         if (isset($payload['repository']['url'])) { // github/anything hook
             $urlRegex = '{^(?:ssh://git@|https?://|git://|git@)?(?P<host>[a-z0-9.-]+)(?::[0-9]+/|[:/])(?P<path>[\w.-]+(?:/[\w.-]+?)+)(?:\.git|/)?$}i';
             $url = $payload['repository']['url'];
+            $ghRepoName = $payload['repository']['name'];
+            $ghOwnerId = $payload['repository']['owner']['id'];
             $url = str_replace('https://api.github.com/repos', 'https://github.com', $url);
-        } elseif (isset($payload['project']['git_http_url'])) { // gitlab event payload
-            $urlRegex = '{^(?:ssh://git@|https?://|git://|git@)?(?P<host>[a-z0-9.-]+)(?::[0-9]+/|[:/])(?P<path>[\w.-]+(?:/[\w.-]+?)+)(?:\.git|/)?$}i';
-            $url = $payload['project']['git_http_url'];
-        } elseif (isset($payload['repository']['links']['html']['href'])) { // bitbucket push event payload
-            $urlRegex = '{^(?:https?://|git://|git@)?(?:api\.)?(?P<host>bitbucket\.org)[/:](?P<path>[\w.-]+/[\w.-]+?)(\.git)?/?$}i';
-            $url = $payload['repository']['links']['html']['href'];
-        } elseif (isset($payload['canon_url']) && isset($payload['repository']['absolute_url'])) { // bitbucket post hook (deprecated)
-            $urlRegex = '{^(?:https?://|git://|git@)?(?P<host>bitbucket\.org)[/:](?P<path>[\w.-]+/[\w.-]+?)(\.git)?/?$}i';
-            $url = $payload['canon_url'].$payload['repository']['absolute_url'];
+            $githubOrgSecret = '';
         } else {
             return new JsonResponse(array('status' => 'error', 'message' => 'Missing or invalid payload'), 406);
         }
 
-        return $this->receivePost($request, $url, $urlRegex);
+        return $this->receivePost($request, $ghRepoName, $ghOwnerId, $url, $urlRegex, $githubOrgSecret);
     }
 
     /**
@@ -217,30 +174,71 @@ class ApiController extends Controller
      * Perform the package update
      *
      * @param Request $request the current request
+     * @param string $ghRepoName The name of the repository on GitHub
+     * @param string $ghOwnerId The github id of the GitHub repository owner.
      * @param string $url the repository's URL (deducted from the request)
      * @param string $urlRegex the regex used to split the user packages into domain and path
+     * @param string $githubOrgSecret The shared secret value github sends us in organizational webhook events.
      * @return Response
      */
-    protected function receivePost(Request $request, $url, $urlRegex)
+    protected function receivePost(Request $request, $ghRepoName, $ghOwnerId, $url, $urlRegex, $githubOrgSecret)
     {
+        // Verify shared secret.
+        if ($githubOrgSecret !== $this->container->getParameter('github_org_webhook_secret')) {
+            return new Response(json_encode(['status' => 'error', 'message' => 'Incorrect shared secret']), 403);
+        }
+
         // try to parse the URL first to avoid the DB lookup on malformed requests
         if (!preg_match($urlRegex, $url)) {
             return new Response(json_encode(array('status' => 'error', 'message' => 'Could not parse payload repository URL')), 406);
         }
 
-        // find the user
-        $user = $this->findUser($request);
-
-        if (!$user) {
-            return new Response(json_encode(array('status' => 'error', 'message' => 'Invalid credentials')), 403);
+        // Locate the package associated to the github repository, or create it.
+        // GitHub repositories must follow the naming convention that the upstream
+        // packagist vendor is given followed by a '.', followed by the upstream
+        // package name. Thus 'drupal/drupal' in packagist becomes 'drupal.drupal'
+        // in github.com/iglue-repo. In case the upstream vendor name contains a
+        // '.', it is represented as two consecutive dots in GitHub.
+        $repoNameRegex = '/^([a-z0-9](?:(?:-|\.\.|_)?[a-z0-9]+)*)\.([a-z0-9](?:[_.-]?[a-z0-9]+)*)$/';
+        $ghRepoNameParts = [];
+        if (! preg_match($repoNameRegex, $ghRepoName, $ghRepoNameParts)) {
+            return new Response(json_encode(['status' => 'error', 'message' => 'Could not parse repository name into vendor and package']), 406);
         }
+        $expectedVendor = str_replace('..', '.', $ghRepoNameParts[1]);
+        $expectedPackage = $ghRepoNameParts[2];
+        $expectedFullPackage = "$expectedVendor/$expectedPackage";
 
-        // try to find the user package
-        $packages = $this->findPackagesByUrl($user, $url, $urlRegex);
+        $packageOrmRepo = $this->getDoctrine()->getRepository('PackagistWebBundle:Package');
+        $existingPackage = $packageOrmRepo->findOneByName($expectedFullPackage);
+        if (! $existingPackage) {
+            // Try to create a new package.
+            $package = new Package;
+            $package->setEntityRepository($packageOrmRepo);
+            $package->setRouter($this->get('router'));
+            // See if we can assign a maintainer by matching the github owner to a local user.
+            $userOrmRepo = $this->getDoctrine()->getRepository('PackagistWebBundle:User');
+            $maintainer = $userOrmRepo->findOneByGithubId($ghOwnerId);
+            if ($maintainer) {
+                $package->addMaintainer($maintainer);
+            }
+            // Most of the magic happens here; this results in accessing the
+            // composer.json on github and setting most Package properties.
+            $package->setRepository($url);
+            $errors = $this->get('validator')->validate($package);
+            if (count($errors) > 0) {
+                $errorArray = array();
+                foreach ($errors as $error) {
+                    $errorArray[$error->getPropertyPath()] =  $error->getMessage();
+                }
+                return new JsonResponse(array('status' => 'error', 'message' => $errorArray), 406);
+            }
 
-        if (!$packages) {
-            return new Response(json_encode(array('status' => 'error', 'message' => 'Could not find a package that matches this request (does user maintain the package?)')), 404);
+            if ($package->getName() !== $expectedFullPackage) {
+                $actualName = $package->getName();
+                return new Response(json_encode(['status' => 'error', 'message' => "GitHub repository name matches package '$expectedFullPackage', but composer.json disagrees with '$actualName'"]), 406);
+            }
         }
+        $packages = [$existingPackage];
 
         // don't die if this takes a while
         set_time_limit(3600);
