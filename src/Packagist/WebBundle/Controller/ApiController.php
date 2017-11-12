@@ -86,14 +86,17 @@ class ApiController extends Controller
             $urlRegex = '{^(?:ssh://git@|https?://|git://|git@)?(?P<host>[a-z0-9.-]+)(?::[0-9]+/|[:/])(?P<path>[\w.-]+(?:/[\w.-]+?)+)(?:\.git|/)?$}i';
             $url = $payload['repository']['url'];
             $ghRepoName = $payload['repository']['name'];
-            $ghOwnerId = $payload['repository']['owner']['id'];
+            $ghMaintainerId = null;
+            if ($payload['ref_type'] == 'tag' && $payload['pusher_type'] == 'user') {
+                $ghMaintainerId = $payload['sender']['id'];
+            }
             $url = str_replace('https://api.github.com/repos', 'https://github.com', $url);
             $githubOrgSecret = '';
         } else {
             return new JsonResponse(array('status' => 'error', 'message' => 'Missing or invalid payload'), 406);
         }
 
-        return $this->receivePost($request, $ghRepoName, $ghOwnerId, $url, $urlRegex, $githubOrgSecret);
+        return $this->receivePost($request, $ghRepoName, $ghMaintainerId, $url, $urlRegex, $githubOrgSecret);
     }
 
     /**
@@ -185,13 +188,15 @@ class ApiController extends Controller
      *
      * @param Request $request the current request
      * @param string $ghRepoName The name of the repository on GitHub
-     * @param string $ghOwnerId The github id of the GitHub repository owner.
+     * @param string $ghMaintainerId The github id of a user that should be set as a maintainer.
      * @param string $url the repository's URL (deducted from the request)
      * @param string $urlRegex the regex used to split the user packages into domain and path
      * @param string $githubOrgSecret The shared secret value github sends us in organizational webhook events.
+     *
      * @return Response
      */
-    protected function receivePost(Request $request, $ghRepoName, $ghOwnerId, $url, $urlRegex, $githubOrgSecret)
+    protected function receivePost(Request $request, $ghRepoName,
+      $ghMaintainerId, $url, $urlRegex, $githubOrgSecret)
     {
         // try to parse the URL first to avoid the DB lookup on malformed requests
         if (!preg_match($urlRegex, $url)) {
@@ -223,12 +228,11 @@ class ApiController extends Controller
             $package = new Package;
             $package->setEntityRepository($packageOrmRepo);
             $package->setRouter($this->get('router'));
-            // See if we can assign a maintainer by matching the github owner to a local user.
-            $userOrmRepo = $this->getDoctrine()->getRepository('PackagistWebBundle:User');
-            $maintainer = $userOrmRepo->findOneByGithubId($ghOwnerId);
-            if ($maintainer) {
-                $package->addMaintainer($maintainer);
+
+            if ($ghMaintainerId !== null) {
+                $this->ensurePackageHasMaintainer($package, $ghMaintainerId);
             }
+
             // Most of the magic happens here; this results in accessing the
             // composer.json on github and setting most Package properties.
             $package->setRepository($url);
@@ -262,7 +266,7 @@ class ApiController extends Controller
         try {
             /** @var Package $package */
             foreach ($packages as $package) {
-                $em->transactional(function($em) use ($package, $updater, $io, $config) {
+                $em->transactional(function($em) use ($package, $ghMaintainerId, $updater, $io, $config) {
                     // prepare dependencies
                     $loader = new ValidatingArrayLoader(new ArrayLoader());
 
@@ -272,6 +276,10 @@ class ApiController extends Controller
 
                     // perform the actual update (fetch and re-scan the repository's source)
                     $updater->update($io, $config, $package, $repository);
+
+                    if ($ghMaintainerId !== null) {
+                        $this->ensurePackageHasMaintainer($package, $ghMaintainerId);
+                    }
 
                     // update the package entity
                     $package->setAutoUpdated(true);
@@ -342,5 +350,20 @@ class ApiController extends Controller
         }
 
         return $packages;
+    }
+
+    protected function ensurePackageHasMaintainer(Package $package, $githubMaintainerId) {
+        // See if we can assign a maintainer by matching the github committer to a local user.
+        $userOrmRepo = $this->getDoctrine()->getRepository('PackagistWebBundle:User');
+        /**
+         * @var User $maintainer
+         */
+        $maintainer = $userOrmRepo->findOneByGithubId($githubMaintainerId);
+        if ($maintainer) {
+            if (! $package->getMaintainers()->contains($maintainer))
+            {
+                $package->addMaintainer($maintainer);
+            }
+        }
     }
 }
