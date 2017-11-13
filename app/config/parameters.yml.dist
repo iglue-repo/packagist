@@ -1,4 +1,6 @@
 parameters:
+    iglue_repository_number: 1
+
     database_driver: pdo_mysql
     database_host: localhost
     database_name: packagist
@@ -14,6 +16,7 @@ parameters:
     mailer_from_name: Admin Team
 
     github_authorized_org: iglue-repo
+    github_org_webhook_secret: CHANGE_ME_IN_PROD
 
     # packagist_host: example.org
     # router.request_context.host: '%packagist_host%'

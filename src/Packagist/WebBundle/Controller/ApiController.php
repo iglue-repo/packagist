@@ -18,9 +18,9 @@ use Composer\IO\BufferIO;
 use Composer\Package\Loader\ArrayLoader;
 use Composer\Package\Loader\ValidatingArrayLoader;
 use Composer\Repository\InvalidRepositoryException;
-use Composer\Repository\VcsRepository;
 use Packagist\WebBundle\Entity\Package;
 use Packagist\WebBundle\Entity\User;
+use Packagist\WebBundle\Repository\VcsRepository;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -60,16 +60,18 @@ class ApiController extends Controller
      */
     public function updatePackageAction(Request $request)
     {
-        // Verify message is signed by GitHub
-        $rawSignature = $request->headers->get('X-Hub-Signature');
-        list($algo, $hexits) = explode('=', $rawSignature, 2);
-        $correctHexits = hash_hmac(
-            $algo,
-            $request->getContent(),
-            $this->container->getParameter('github_org_webhook_secret')
-          );
-        if (! hash_equals($correctHexits, $hexits)) {
-            return new JsonResponse(['status' => 'error', 'message' => 'Invalid X-Hub-Signature'], 403);
+        if (! $this->container->get('kernel')->getEnvironment() == 'dev') {
+            // Verify message is signed by GitHub
+            $rawSignature = $request->headers->get('X-Hub-Signature');
+            list($algo, $hexits) = explode('=', $rawSignature, 2);
+            $correctHexits = hash_hmac(
+              $algo,
+              $request->getContent(),
+              $this->container->getParameter('github_org_webhook_secret')
+            );
+            if (! hash_equals($correctHexits, $hexits)) {
+                return new JsonResponse(['status' => 'error', 'message' => 'Invalid X-Hub-Signature'], 403);
+            }
         }
 
         // parse the payload
@@ -262,16 +264,22 @@ class ApiController extends Controller
         $config = Factory::createConfig();
         $io = new BufferIO('', OutputInterface::VERBOSITY_VERY_VERBOSE, new HtmlOutputFormatter(Factory::createAdditionalStyles()));
         $io->loadConfiguration($config);
+        $iglueTargetRepo = $this->container->getParameter('iglue_repository_number');
 
         try {
             /** @var Package $package */
             foreach ($packages as $package) {
-                $em->transactional(function($em) use ($package, $ghMaintainerId, $updater, $io, $config) {
+                $em->transactional(function($em) use ($package, $iglueTargetRepo, $ghMaintainerId, $updater, $io, $config) {
                     // prepare dependencies
                     $loader = new ValidatingArrayLoader(new ArrayLoader());
 
                     // prepare repository
-                    $repository = new VcsRepository(array('url' => $package->getRepository()), $io, $config);
+                    $repository = new VcsRepository(
+                      array('url' => $package->getRepository()),
+                      $iglueTargetRepo,
+                      $io,
+                      $config
+                    );
                     $repository->setLoader($loader);
 
                     // perform the actual update (fetch and re-scan the repository's source)
