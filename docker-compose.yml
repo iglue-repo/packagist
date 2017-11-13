@@ -4,6 +4,7 @@ services:
     image: prophusion/prophusion-apache
     environment:
       - PHP_VERSION=7.1.11
+      - COMPOSER_HOME=/var/www/html/app/cache/composer
     volumes:
       - .:/var/www/html
       - php-builds:/usr/local/phpenv/versions
