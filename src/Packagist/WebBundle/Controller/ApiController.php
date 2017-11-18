@@ -218,7 +218,7 @@ class ApiController extends Controller
         }
         $expectedVendor = str_replace('..', '.', $ghRepoNameParts[1]);
         $expectedPackage = $ghRepoNameParts[2];
-        $expectedFullPackage = "$expectedVendor/$expectedPackage";
+        $expectedFullPackage = "$expectedVendor@iglue/$expectedPackage";
 
         $packageOrmRepo = $this->getDoctrine()->getRepository('PackagistWebBundle:Package');
         $existingPackage = $packageOrmRepo->findOneByName($expectedFullPackage);
