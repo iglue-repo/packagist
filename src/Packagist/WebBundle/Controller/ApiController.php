@@ -271,7 +271,7 @@ class ApiController extends Controller
             foreach ($packages as $package) {
                 $em->transactional(function($em) use ($package, $iglueTargetRepo, $ghMaintainerId, $updater, $io, $config) {
                     // prepare dependencies
-                    $loader = new ValidatingArrayLoader(new ArrayLoader());
+                    $loader = new ValidatingArrayLoader(new ArrayLoader(), false);
 
                     // prepare repository
                     $repository = new VcsRepository(
