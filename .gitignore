@@ -1,7 +1,7 @@
-web/1-unstable/bundles/
-web/1-unstable/packages*.json
-web/1-unstable/providers-*.json
-web/1-unstable/p/
+/web/1-unstable/bundles/
+/web/1-unstable/packages*.json
+/web/1-unstable/providers-*.json
+/web/1-unstable/p
 app/config/parameters.yml
 app/bootstrap*
 app/cache/*

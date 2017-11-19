@@ -127,7 +127,7 @@ class FeedController extends Controller
      * @Route(
      *     "/package.{package}.{_format}",
      *     name="feed_package",
-     *     requirements={"_format"="(rss|atom)", "package"="[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+"}
+     *     requirements={"_format"="(rss|atom)", "package"="[A-Za-z0-9_.-@]+/[A-Za-z0-9_.-]+"}
      * )
      * @Method({"GET"})
      */

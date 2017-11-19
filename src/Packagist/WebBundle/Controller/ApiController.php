@@ -102,7 +102,7 @@ class ApiController extends Controller
     }
 
     /**
-     * @Route("/downloads/{name}", name="track_download", requirements={"name"="[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+"}, defaults={"_format" = "json"})
+     * @Route("/downloads/{name}", name="track_download", requirements={"name"="[A-Za-z0-9_.-@]+/[A-Za-z0-9_.-]+"}, defaults={"_format" = "json"})
      * @Method({"POST"})
      */
     public function trackDownloadAction(Request $request, $name)
