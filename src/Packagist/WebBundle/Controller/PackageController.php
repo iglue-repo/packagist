@@ -99,7 +99,7 @@ class PackageController extends Controller
 
     /**
      * @Template()
-     * @Route("/packages/submit", name="submit")
+     * -- Iglue doesn't accept direct submissions. Route("/packages/submit", name="submit")
      */
     public function submitPackageAction(Request $req)
     {
@@ -193,7 +193,7 @@ class PackageController extends Controller
 
     /**
      * @Template()
-     * @Route("/packages/{vendor}/", name="view_vendor", requirements={"vendor"="[A-Za-z0-9_.-]+"})
+     * @Route("/packages/{vendor}/", name="view_vendor", requirements={"vendor"="[@A-Za-z0-9_.-]+"})
      */
     public function viewVendorAction($vendor)
     {
@@ -219,13 +219,13 @@ class PackageController extends Controller
      * @Route(
      *     "/p/{name}.{_format}",
      *     name="view_package_alias",
-     *     requirements={"name"="[A-Za-z0-9_.-]+(/[A-Za-z0-9_.-]+?)?", "_format"="(json)"},
+     *     requirements={"name"="[@A-Za-z0-9_.-]+(/[A-Za-z0-9_.-]+?)?", "_format"="(json)"},
      *     defaults={"_format"="html"}
      * )
      * @Route(
      *     "/packages/{name}",
      *     name="view_package_alias2",
-     *     requirements={"name"="[A-Za-z0-9_.-]+(/[A-Za-z0-9_.-]+?)?/"},
+     *     requirements={"name"="[@A-Za-z0-9_.-]+(/[A-Za-z0-9_.-]+?)?/"},
      *     defaults={"_format"="html"}
      * )
      * @Method({"GET"})
@@ -250,7 +250,7 @@ class PackageController extends Controller
      * @Route(
      *     "/providers/{name}",
      *     name="view_providers",
-     *     requirements={"name"="[A-Za-z0-9/_.-]+?"},
+     *     requirements={"name"="[@A-Za-z0-9/_.-]+?"},
      *     defaults={"_format"="html"}
      * )
      * @Method({"GET"})
@@ -292,7 +292,7 @@ class PackageController extends Controller
      * @Route(
      *     "/packages/{name}.{_format}",
      *     name="view_package",
-     *     requirements={"name"="[A-Za-z0-9_.-@]+/[A-Za-z0-9_.-]+?", "_format"="(json)"},
+     *     requirements={"name"="[@A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+?", "_format"="(json)"},
      *     defaults={"_format"="html"}
      * )
      * @Method({"GET"})
@@ -412,7 +412,7 @@ class PackageController extends Controller
      * @Route(
      *     "/packages/{name}/downloads.{_format}",
      *     name="package_downloads_full",
-     *     requirements={"name"="[A-Za-z0-9_.-@]+/[A-Za-z0-9_.-]+?", "_format"="(json)"}
+     *     requirements={"name"="[@A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+?", "_format"="(json)"}
      * )
      * @Method({"GET"})
      */
@@ -467,7 +467,7 @@ class PackageController extends Controller
      * @Route(
      *     "/versions/{versionId}.{_format}",
      *     name="view_version",
-     *     requirements={"name"="[A-Za-z0-9_.-@]+/[A-Za-z0-9_.-]+?", "versionId"="[0-9]+", "_format"="(json)"}
+     *     requirements={"name"="[@A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+?", "versionId"="[0-9]+", "_format"="(json)"}
      * )
      * @Method({"GET"})
      */
@@ -490,7 +490,7 @@ class PackageController extends Controller
      * @Route(
      *     "/versions/{versionId}/delete",
      *     name="delete_version",
-     *     requirements={"name"="[A-Za-z0-9_.-@]+/[A-Za-z0-9_.-]+?", "versionId"="[0-9]+"}
+     *     requirements={"name"="[@A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+?", "versionId"="[0-9]+"}
      * )
      * @Method({"DELETE"})
      */
@@ -519,7 +519,7 @@ class PackageController extends Controller
     }
 
     /**
-     * @Route("/packages/{name}", name="update_package", requirements={"name"="[A-Za-z0-9_.-@]+/[A-Za-z0-9_.-]+"}, defaults={"_format" = "json"})
+     * @Route("/packages/{name}", name="update_package", requirements={"name"="[@A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+"}, defaults={"_format" = "json"})
      * @Method({"PUT"})
      */
     public function updatePackageAction(Request $req, $name)
@@ -601,7 +601,7 @@ class PackageController extends Controller
     }
 
     /**
-     * @Route("/packages/{name}", name="delete_package", requirements={"name"="[A-Za-z0-9_.-@]+/[A-Za-z0-9_.-]+"})
+     * @Route("/packages/{name}", name="delete_package", requirements={"name"="[@A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+"})
      * @Method({"DELETE"})
      */
     public function deletePackageAction(Request $req, $name)
@@ -654,7 +654,7 @@ class PackageController extends Controller
 
     /**
      * @Template("PackagistWebBundle:Package:viewPackage.html.twig")
-     * @Route("/packages/{name}/maintainers/", name="add_maintainer", requirements={"name"="[A-Za-z0-9_.-@]+/[A-Za-z0-9_.-]+"})
+     * @Route("/packages/{name}/maintainers/", name="add_maintainer", requirements={"name"="[@A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+"})
      */
     public function createMaintainerAction(Request $req, $name)
     {
@@ -711,7 +711,7 @@ class PackageController extends Controller
 
     /**
      * @Template("PackagistWebBundle:Package:viewPackage.html.twig")
-     * @Route("/packages/{name}/maintainers/delete", name="remove_maintainer", requirements={"name"="[A-Za-z0-9_.-@]+/[A-Za-z0-9_.-]+"})
+     * @Route("/packages/{name}/maintainers/delete", name="remove_maintainer", requirements={"name"="[@A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+"})
      */
     public function removeMaintainerAction(Request $req, $name)
     {
@@ -769,7 +769,7 @@ class PackageController extends Controller
      * @Route(
      *     "/packages/{name}/edit",
      *     name="edit_package",
-     *     requirements={"name"="[A-Za-z0-9_.-@]+/[A-Za-z0-9_.-]+?"}
+     *     requirements={"name"="[@A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+?"}
      * )
      */
     public function editAction(Request $req, Package $package)
@@ -809,7 +809,7 @@ class PackageController extends Controller
      * @Route(
      *      "/packages/{name}/abandon",
      *      name="abandon_package",
-     *      requirements={"name"="[A-Za-z0-9_.-@]+/[A-Za-z0-9_.-]+?"}
+     *      requirements={"name"="[@A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+?"}
      * )
      * @Template()
      */
@@ -844,7 +844,7 @@ class PackageController extends Controller
      * @Route(
      *      "/packages/{name}/unabandon",
      *      name="unabandon_package",
-     *      requirements={"name"="[A-Za-z0-9_.-@]+/[A-Za-z0-9_.-]+?"}
+     *      requirements={"name"="[@A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+?"}
      * )
      */
     public function unabandonAction(Package $package)
@@ -869,7 +869,7 @@ class PackageController extends Controller
      * @Route(
      *      "/packages/{name}/stats.{_format}",
      *      name="view_package_stats",
-     *      requirements={"name"="[A-Za-z0-9_.-@]+/[A-Za-z0-9_.-]+?", "_format"="(json)"},
+     *      requirements={"name"="[@A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+?", "_format"="(json)"},
      *      defaults={"_format"="html"}
      * )
      * @Template()
@@ -914,7 +914,7 @@ class PackageController extends Controller
      * @Route(
      *      "/packages/{name}/dependents",
      *      name="view_package_dependents",
-     *      requirements={"name"="([A-Za-z0-9_.-@]+/[A-Za-z0-9_.-]+?|ext-[A-Za-z0-9_.-]+?)"}
+     *      requirements={"name"="([@A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+?|ext-[A-Za-z0-9_.-]+?)"}
      * )
      */
     public function dependentsAction(Request $req, $name)
@@ -943,7 +943,7 @@ class PackageController extends Controller
      * @Route(
      *      "/packages/{name}/suggesters",
      *      name="view_package_suggesters",
-     *      requirements={"name"="([A-Za-z0-9_.-@]+/[A-Za-z0-9_.-]+?|ext-[A-Za-z0-9_.-]+?)"}
+     *      requirements={"name"="([@A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+?|ext-[A-Za-z0-9_.-]+?)"}
      * )
      */
     public function suggestersAction(Request $req, $name)
@@ -972,7 +972,7 @@ class PackageController extends Controller
      * @Route(
      *      "/packages/{name}/stats/all.json",
      *      name="package_stats",
-     *      requirements={"name"="[A-Za-z0-9_.-@]+/[A-Za-z0-9_.-]+?"}
+     *      requirements={"name"="[@A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+?"}
      * )
      */
     public function overallStatsAction(Request $req, Package $package, Version $version = null)
@@ -1038,7 +1038,7 @@ class PackageController extends Controller
      * @Route(
      *      "/packages/{name}/stats/{version}.json",
      *      name="version_stats",
-     *      requirements={"name"="[A-Za-z0-9_.-@]+/[A-Za-z0-9_.-]+?", "version"=".+?"}
+     *      requirements={"name"="[@A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+?", "version"=".+?"}
      * )
      */
     public function versionStatsAction(Request $req, Package $package, $version)

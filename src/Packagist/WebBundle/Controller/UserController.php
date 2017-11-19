@@ -144,7 +144,7 @@ class UserController extends Controller
     }
 
     /**
-     * @Route("/users/{name}/favorites/{package}", name="user_remove_fav", defaults={"_format" = "json"}, requirements={"package"="[A-Za-z0-9_.-@]+/[A-Za-z0-9_.-]+?"})
+     * @Route("/users/{name}/favorites/{package}", name="user_remove_fav", defaults={"_format" = "json"}, requirements={"package"="[@A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+?"})
      * @ParamConverter("user", options={"mapping": {"name": "username"}})
      * @ParamConverter("package", options={"mapping": {"package": "name"}})
      * @Method({"DELETE"})
