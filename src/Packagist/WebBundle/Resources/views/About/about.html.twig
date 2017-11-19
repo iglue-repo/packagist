@@ -70,7 +70,7 @@ acme/email</code></pre>
     }
 }</code></pre>
             <p>Most of this information is obvious, keywords are tags, require are list of dependencies that your package has. This can of course be packages, not only a php version. You can use ext-foo to require php extensions (e.g. ext-curl). Note that most extensions don't expose version information, so unless you know for sure it does, it's safer to use <code>"ext-curl": "*"</code> to allow any version of it. Finally the type field is in this case indicating that this is a library. If you do plugins for frameworks etc, and if they integrate composer, they may have a custom package type for their plugins that you can use to install the package with their own installer. In the absence of custom type, you can omit it or use "library".</p>
-            <p>Once you have this file committed in your repository root, you can <a href="{{ path('submit') }}">submit the package</a> to Packagist by entering the public repository URL.</p>
+            <p>Once you have this file committed in your repository root, you can submit the package to Packagist by entering the public repository URL.</p>
         </section>
 
         <section class="col-md-6">
