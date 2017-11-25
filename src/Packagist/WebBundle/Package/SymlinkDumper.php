@@ -205,6 +205,9 @@ class SymlinkDumper
                 $current += $step;
 
                 // prepare packages in memory
+                /**
+                 * @var \Packagist\WebBundle\Entity\Package $package
+                 */
                 foreach ($packages as $package) {
                     $affectedFiles = array();
                     $name = strtolower($package->getName());
@@ -231,6 +234,9 @@ class SymlinkDumper
                         $versionIds[] = $version->getId();
                     }
                     $versionData = $versionRepo->getVersionData($versionIds);
+                    /**
+                     * @var Version $version
+                     */
                     foreach ($package->getVersions() as $version) {
                         foreach (array_slice($version->getNames(), 0, 150) as $versionName) {
                             if (!preg_match('{^[A-Za-z0-9_-][A-Za-z0-9_.-]*@iglue/[A-Za-z0-9_-][A-Za-z0-9_.-]*$}', $versionName) || strpos($versionName, '..')) {
@@ -242,6 +248,16 @@ class SymlinkDumper
                             $this->dumpVersionToIndividualFile($version, $file, $key, $versionData);
                             $modifiedIndividualFiles[$key] = true;
                             $affectedFiles[$key] = true;
+
+                            foreach ($version->getReplace() as $replaceLink) {
+                                $replaceName = $replaceLink->getPackageName();
+                                $file = $buildDir . '/' . $replaceName . '.json';
+                                $key = "$replaceName.json";
+
+                                $this->dumpVersionToIndividualFile($version, $file, $key, $versionData);
+                                $modifiedIndividualFiles[$key] = true;
+                                $affectedFiles[$key] = true;
+                            }
                         }
                     }
 
