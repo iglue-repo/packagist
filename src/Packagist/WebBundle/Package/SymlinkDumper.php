@@ -309,7 +309,7 @@ class SymlinkDumper
 
             // prepare root file
             $rootFile = $buildDir.'/packages.json';
-            $this->rootFile = array('packages' => array());
+            $this->rootFile = array('packages' => array(), 'trust-replace' => true);
             $url = $this->router->generate('track_download', array('name' => 'VND/PKG'));
             $this->rootFile['notify'] = str_replace('VND/PKG', '%package%', $url);
             $this->rootFile['notify-batch'] = $this->router->generate('track_download_batch');
